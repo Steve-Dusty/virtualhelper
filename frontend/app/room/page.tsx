@@ -13,6 +13,13 @@ import {
 } from '@livekit/components-react';
 import '@livekit/components-styles';
 import { Track } from 'livekit-client';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Separator } from '@/components/ui/separator';
 
 interface DashboardCache {
   summary: string;
@@ -45,7 +52,7 @@ interface AnimationHistory {
 function SmartDashboard() {
   const [cache, setCache] = useState<DashboardCache | null>(null);
   const [qaHistory, setQaHistory] = useState<QAItem[]>([]);
-  const [selectedView, setSelectedView] = useState<'summary' | 'in-depth' | 'topics' | 'animations' | null>(null);
+  const [selectedView, setSelectedView] = useState<'summary' | 'in-depth' | 'topics' | 'animations'>('summary');
   const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
   const [animationInput, setAnimationInput] = useState('');
   const [currentAnimation, setCurrentAnimation] = useState<AnimationRequest | null>(null);
@@ -57,44 +64,29 @@ function SmartDashboard() {
     if (!room) return;
 
     const handleData = (payload: Uint8Array, participant: any, kind: any, topic?: string) => {
-      console.log(`📨 Received data on topic: ${topic}`);
-
       if (topic === 'lk.dashboard-cache') {
-        // Pre-computed dashboard data
         try {
           const text = new TextDecoder().decode(payload);
           const data = JSON.parse(text) as DashboardCache;
           setCache(data);
-          console.log('✅ Dashboard cache updated:', data);
         } catch (e) {
-          console.error('❌ Error parsing cache:', e);
+          console.error('Error parsing cache:', e);
         }
       } else if (topic === 'lk.student-qa') {
-        // Student Q&A
         try {
           const text = new TextDecoder().decode(payload);
           const qa = JSON.parse(text) as QAItem;
           setQaHistory(prev => [...prev, qa]);
-          console.log('✅ Q&A added:', qa);
         } catch (e) {
-          console.error('❌ Error parsing Q&A:', e);
+          console.error('Error parsing Q&A:', e);
         }
-      } else if (topic === 'lk.transcription') {
-        // Just log transcriptions to console
-        const text = new TextDecoder().decode(payload);
-        console.log('📝 Transcription:', text);
       } else if (topic === 'lk.animation-processing') {
-        // Animation is being processed
         try {
-          const text = new TextDecoder().decode(payload);
-          const data = JSON.parse(text);
           setCurrentAnimation(prev => prev ? { ...prev, status: 'processing' } : null);
-          console.log('⚙️ Animation processing:', data);
         } catch (e) {
-          console.error('❌ Error parsing animation-processing:', e);
+          console.error('Error parsing animation-processing:', e);
         }
       } else if (topic === 'lk.animation-complete') {
-        // Animation generation complete
         try {
           const text = new TextDecoder().decode(payload);
           const data = JSON.parse(text);
@@ -105,20 +97,17 @@ function SmartDashboard() {
             timestamp: new Date().toISOString()
           }]);
           setIsGenerating(false);
-          console.log('✅ Animation complete:', data);
         } catch (e) {
-          console.error('❌ Error parsing animation-complete:', e);
+          console.error('Error parsing animation-complete:', e);
         }
       } else if (topic === 'lk.animation-error') {
-        // Animation generation error
         try {
           const text = new TextDecoder().decode(payload);
           const data = JSON.parse(text);
           setCurrentAnimation(prev => prev ? { ...prev, status: 'error', error: data.error } : null);
           setIsGenerating(false);
-          console.error('❌ Animation error:', data);
         } catch (e) {
-          console.error('❌ Error parsing animation-error:', e);
+          console.error('Error parsing animation-error:', e);
         }
       }
     };
@@ -153,8 +142,6 @@ function SmartDashboard() {
         new TextEncoder().encode(payload),
         { reliable: true, topic: 'lk.animation-request' }
       );
-
-      console.log('🎬 Animation request sent:', payload);
     } catch (error) {
       console.error('Failed to send animation request:', error);
       setCurrentAnimation(prev => prev ? { ...prev, status: 'error', error: 'Failed to send request' } : null);
@@ -162,307 +149,279 @@ function SmartDashboard() {
     }
   };
 
-  const renderContent = () => {
-    if (!cache) {
-      return (
-        <div className="flex items-center justify-center h-full">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto mb-4"></div>
-            <p className="text-gray-400">Analyzing classroom discussion...</p>
-            <p className="text-gray-500 text-sm mt-2">AI is listening and learning...</p>
-          </div>
-        </div>
-      );
-    }
-
-    if (!selectedView) {
-      return (
-        <div className="text-center text-gray-400 py-20">
-          <div className="text-6xl mb-4">🎯</div>
-          <p className="text-lg">Select a button above to get instant help!</p>
-          <p className="text-sm text-gray-500 mt-2">All summaries are pre-computed for instant results</p>
-        </div>
-      );
-    }
-
-    if (selectedView === 'summary') {
-      return (
-        <div className="bg-gradient-to-br from-blue-900/30 to-blue-800/20 border border-blue-700/50 p-6 rounded-lg">
-          <h3 className="text-2xl font-bold text-blue-300 mb-4 flex items-center gap-2">
-            <span>📊</span> Quick Summary
-          </h3>
-          <p className="text-lg leading-relaxed">{cache.summary}</p>
-          <div className="mt-4 text-xs text-gray-500">
-            Last updated: {new Date(cache.last_updated).toLocaleTimeString()}
-          </div>
-        </div>
-      );
-    }
-
-    if (selectedView === 'in-depth') {
-      return (
-        <div className="bg-gradient-to-br from-purple-900/30 to-purple-800/20 border border-purple-700/50 p-6 rounded-lg">
-          <h3 className="text-2xl font-bold text-purple-300 mb-4 flex items-center gap-2">
-            <span>📚</span> In-Depth Explanation
-          </h3>
-          <p className="text-lg leading-relaxed">{cache.in_depth}</p>
-          <div className="mt-4 text-xs text-gray-500">
-            Last updated: {new Date(cache.last_updated).toLocaleTimeString()}
-          </div>
-        </div>
-      );
-    }
-
-    if (selectedView === 'topics') {
-      return (
-        <div className="bg-gradient-to-br from-green-900/30 to-green-800/20 border border-green-700/50 p-6 rounded-lg">
-          <h3 className="text-2xl font-bold text-green-300 mb-4 flex items-center gap-2">
-            <span>💡</span> Topics Being Discussed
-          </h3>
-          {selectedTopic ? (
-            <div>
-              <button
-                onClick={() => setSelectedTopic(null)}
-                className="text-sm text-green-400 hover:text-green-300 mb-4"
-              >
-                ← Back to topics
-              </button>
-              <div className="bg-green-950/50 p-4 rounded">
-                <h4 className="text-xl font-semibold mb-2">{selectedTopic}</h4>
-                <p className="text-gray-300">
-                  This topic is being discussed in the current conversation. Check the summary and in-depth explanation for more details!
-                </p>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {cache.topics.length === 0 ? (
-                <p className="text-gray-400">No topics identified yet...</p>
-              ) : (
-                cache.topics.map((topic, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setSelectedTopic(topic)}
-                    className="w-full bg-green-950/50 hover:bg-green-900/50 p-4 rounded-lg text-left transition border border-green-700/30 hover:border-green-600"
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl">📌</span>
-                      <span className="text-lg">{topic}</span>
-                    </div>
-                  </button>
-                ))
-              )}
-            </div>
-          )}
-        </div>
-      );
-    }
-
-    if (selectedView === 'animations') {
-      return (
-        <div className="bg-gradient-to-br from-pink-900/30 to-pink-800/20 border border-pink-700/50 p-6 rounded-lg">
-          <h3 className="text-2xl font-bold text-pink-300 mb-4 flex items-center gap-2">
-            <span>🎬</span> Generate Animation
-          </h3>
-          <p className="text-gray-300 mb-4">
-            Ask a question about the lesson and get a custom animated explanation!
-          </p>
-
-          {/* Input form */}
-          <div className="mb-6">
-            <textarea
-              value={animationInput}
-              onChange={(e) => setAnimationInput(e.target.value)}
-              placeholder="E.g., Can you explain quadratic equations visually?"
-              className="w-full bg-gray-800 text-white border border-pink-700/50 rounded-lg p-4 min-h-[100px] focus:outline-none focus:border-pink-500"
-              disabled={isGenerating}
-            />
-            <button
-              onClick={handleGenerateAnimation}
-              disabled={!animationInput.trim() || isGenerating}
-              className="mt-3 w-full bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 disabled:from-gray-600 disabled:to-gray-700 text-white font-semibold py-3 px-6 rounded-lg transition"
-            >
-              {isGenerating ? (
-                <span className="flex items-center justify-center gap-2">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                  Generating Animation...
-                </span>
-              ) : (
-                '✨ Generate Animation'
-              )}
-            </button>
-          </div>
-
-          {/* Current animation status */}
-          {currentAnimation && (
-            <div className="mb-6 bg-pink-950/50 border border-pink-700/50 p-4 rounded-lg">
-              <div className="flex items-center justify-between mb-2">
-                <span className="font-semibold text-pink-200">Current Request:</span>
-                <span className={`text-sm px-2 py-1 rounded ${
-                  currentAnimation.status === 'complete' ? 'bg-green-600' :
-                  currentAnimation.status === 'error' ? 'bg-red-600' :
-                  currentAnimation.status === 'processing' ? 'bg-yellow-600' :
-                  'bg-gray-600'
-                }`}>
-                  {currentAnimation.status}
-                </span>
-              </div>
-              <p className="text-gray-300 text-sm mb-3">{currentAnimation.question}</p>
-
-              {currentAnimation.status === 'processing' && (
-                <div className="flex items-center gap-2 text-yellow-300">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-yellow-300"></div>
-                  <span className="text-sm">AI is generating your animation...</span>
-                </div>
-              )}
-
-              {currentAnimation.status === 'error' && (
-                <div className="text-red-300 text-sm">
-                  ❌ Error: {currentAnimation.error}
-                </div>
-              )}
-
-              {currentAnimation.status === 'complete' && currentAnimation.videoId && (
-                <div className="mt-4">
-                  <video
-                    key={currentAnimation.videoId}
-                    controls
-                    autoPlay
-                    className="w-full rounded-lg bg-black"
-                    src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/animation/${currentAnimation.videoId}`}
-                  >
-                    Your browser does not support video playback.
-                  </video>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Animation history */}
-          {animationHistory.length > 0 && (
-            <div>
-              <h4 className="text-lg font-semibold text-pink-300 mb-3">Previous Animations</h4>
-              <div className="space-y-3">
-                {animationHistory.slice(-3).reverse().map((item, idx) => (
-                  <div key={idx} className="bg-pink-950/30 border border-pink-700/30 p-3 rounded-lg">
-                    <p className="text-sm text-gray-300 mb-2">{item.question}</p>
-                    <video
-                      controls
-                      className="w-full rounded bg-black"
-                      src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/animation/${item.videoId}`}
-                    >
-                      Your browser does not support video playback.
-                    </video>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      );
-    }
-
-    return null;
-  };
+  if (!cache) {
+    return (
+      <div className="flex items-center justify-center h-full bg-background">
+        <Card className="w-96 border-border shadow-lg">
+          <CardHeader>
+            <CardTitle className="text-center">Analyzing Session</CardTitle>
+            <CardDescription className="text-center">AI is processing classroom discussion...</CardDescription>
+          </CardHeader>
+          <CardContent className="flex justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
-    <div className="h-full bg-gray-900 text-white flex flex-col">
-      {/* Dashboard Header */}
-      <div className="bg-gradient-to-r from-purple-900 to-blue-900 p-4 border-b border-gray-700">
-        <h2 className="text-2xl font-bold flex items-center gap-2">
-          <span>🎯</span> AI Learning Dashboard
-        </h2>
-        <p className="text-sm text-gray-300 mt-1">
-          {cache ? '⚡ Instant results - pre-computed every 5 seconds' : 'Initializing...'}
-        </p>
-      </div>
-
-      {/* Action Buttons */}
-      <div className="p-4 border-b border-gray-700 bg-gray-800/50">
-        <div className="grid grid-cols-4 gap-3">
-          <button
-            onClick={() => setSelectedView('summary')}
-            disabled={!cache}
-            className={`p-4 rounded-lg font-semibold transition ${
-              selectedView === 'summary'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-800 hover:bg-gray-700 text-gray-300'
-            } ${!cache && 'opacity-50 cursor-not-allowed'}`}
-          >
-            <div className="text-2xl mb-1">📊</div>
-            <div className="text-sm">Summarize</div>
-          </button>
-
-          <button
-            onClick={() => setSelectedView('in-depth')}
-            disabled={!cache}
-            className={`p-4 rounded-lg font-semibold transition ${
-              selectedView === 'in-depth'
-                ? 'bg-purple-600 text-white'
-                : 'bg-gray-800 hover:bg-gray-700 text-gray-300'
-            } ${!cache && 'opacity-50 cursor-not-allowed'}`}
-          >
-            <div className="text-2xl mb-1">📚</div>
-            <div className="text-sm">In-Depth</div>
-          </button>
-
-          <button
-            onClick={() => {
-              setSelectedView('topics');
-              setSelectedTopic(null);
-            }}
-            disabled={!cache}
-            className={`p-4 rounded-lg font-semibold transition ${
-              selectedView === 'topics'
-                ? 'bg-green-600 text-white'
-                : 'bg-gray-800 hover:bg-gray-700 text-gray-300'
-            } ${!cache && 'opacity-50 cursor-not-allowed'}`}
-          >
-            <div className="text-2xl mb-1">💡</div>
-            <div className="text-sm">Topics</div>
-          </button>
-
-          <button
-            onClick={() => {
-              setSelectedView('animations');
-              setAnimationInput('');
-            }}
-            disabled={!cache}
-            className={`p-4 rounded-lg font-semibold transition ${
-              selectedView === 'animations'
-                ? 'bg-pink-600 text-white'
-                : 'bg-gray-800 hover:bg-gray-700 text-gray-300'
-            } ${!cache && 'opacity-50 cursor-not-allowed'}`}
-          >
-            <div className="text-2xl mb-1">🎬</div>
-            <div className="text-sm">Animations</div>
-          </button>
-        </div>
-      </div>
-
-      {/* Content Area */}
-      <div className="flex-1 overflow-y-auto p-6">
-        {renderContent()}
-
-        {/* Q&A History */}
-        {qaHistory.length > 0 && (
-          <div className="mt-8">
-            <h3 className="text-xl font-bold text-yellow-300 mb-4 flex items-center gap-2">
-              <span>❓</span> Recent Questions & Answers
-            </h3>
-            <div className="space-y-3">
-              {qaHistory.slice(-5).reverse().map((qa, idx) => (
-                <div key={idx} className="bg-yellow-900/20 border border-yellow-700/50 p-4 rounded-lg">
-                  <div className="font-semibold text-yellow-200 mb-2">Q: {qa.question}</div>
-                  <div className="text-gray-300 pl-4 border-l-2 border-yellow-600">A: {qa.answer}</div>
-                  <div className="text-xs text-gray-500 mt-2">
-                    {new Date(qa.timestamp).toLocaleTimeString()}
-                  </div>
-                </div>
-              ))}
+    <div className="h-full bg-background">
+      <div className="h-full flex flex-col">
+        {/* Header */}
+        <div className="bg-card border-b border-border px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-semibold text-foreground">Learning Assistant</h2>
+              <p className="text-sm text-muted-foreground mt-0.5">Real-time AI-powered classroom insights</p>
             </div>
+            <Badge variant="outline" className="text-xs">
+              Live Session
+            </Badge>
           </div>
-        )}
+        </div>
+
+        {/* Tabs */}
+        <div className="flex-1 overflow-hidden">
+          <Tabs value={selectedView} onValueChange={(v) => setSelectedView(v as any)} className="h-full flex flex-col">
+            <div className="bg-card border-b border-border px-6">
+              <TabsList className="bg-transparent border-none h-auto p-0">
+                <TabsTrigger
+                  value="summary"
+                  className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-4 py-3"
+                >
+                  Summary
+                </TabsTrigger>
+                <TabsTrigger
+                  value="in-depth"
+                  className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-4 py-3"
+                >
+                  Detailed
+                </TabsTrigger>
+                <TabsTrigger
+                  value="topics"
+                  className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-4 py-3"
+                >
+                  Topics
+                </TabsTrigger>
+                <TabsTrigger
+                  value="animations"
+                  className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-4 py-3"
+                >
+                  Animations
+                </TabsTrigger>
+              </TabsList>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-6">
+              <TabsContent value="summary" className="mt-0">
+                <Card className="border-border">
+                  <CardHeader>
+                    <CardTitle className="text-lg">Quick Summary</CardTitle>
+                    <CardDescription className="text-xs text-muted-foreground">
+                      Last updated: {new Date(cache.last_updated).toLocaleTimeString()}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-foreground leading-relaxed">{cache.summary}</p>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="in-depth" className="mt-0">
+                <Card className="border-border">
+                  <CardHeader>
+                    <CardTitle className="text-lg">Detailed Explanation</CardTitle>
+                    <CardDescription className="text-xs text-muted-foreground">
+                      Last updated: {new Date(cache.last_updated).toLocaleTimeString()}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-foreground leading-relaxed">{cache.in_depth}</p>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="topics" className="mt-0">
+                <Card className="border-border">
+                  <CardHeader>
+                    <CardTitle className="text-lg">Discussion Topics</CardTitle>
+                    <CardDescription className="text-xs text-muted-foreground">
+                      Key concepts being covered
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {selectedTopic ? (
+                      <div>
+                        <Button
+                          variant="ghost"
+                          onClick={() => setSelectedTopic(null)}
+                          className="mb-4 text-sm"
+                        >
+                          ← Back to topics
+                        </Button>
+                        <div className="bg-accent p-4 rounded-lg border border-border">
+                          <h4 className="font-semibold text-foreground mb-2">{selectedTopic}</h4>
+                          <p className="text-muted-foreground text-sm">
+                            This topic is being discussed in the current conversation. Check the summary and detailed explanation for more information.
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        {cache.topics.length === 0 ? (
+                          <p className="text-muted-foreground text-sm">No topics identified yet</p>
+                        ) : (
+                          cache.topics.map((topic, idx) => (
+                            <button
+                              key={idx}
+                              onClick={() => setSelectedTopic(topic)}
+                              className="w-full text-left bg-accent hover:bg-accent/80 border border-border rounded-lg p-4 transition-colors"
+                            >
+                              <span className="text-foreground font-medium">{topic}</span>
+                            </button>
+                          ))
+                        )}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="animations" className="mt-0 space-y-4">
+                <Card className="border-border">
+                  <CardHeader>
+                    <CardTitle className="text-lg">Generate Animation</CardTitle>
+                    <CardDescription className="text-xs text-muted-foreground">
+                      Ask a question to generate a custom animated explanation
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <Textarea
+                      value={animationInput}
+                      onChange={(e) => setAnimationInput(e.target.value)}
+                      placeholder="E.g., Can you explain quadratic equations visually?"
+                      className="min-h-[100px] resize-none"
+                      disabled={isGenerating}
+                    />
+                    <Button
+                      onClick={handleGenerateAnimation}
+                      disabled={!animationInput.trim() || isGenerating}
+                      className="w-full"
+                    >
+                      {isGenerating ? 'Generating...' : 'Generate Animation'}
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                {currentAnimation && (
+                  <Card className="border-border">
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-base">Current Request</CardTitle>
+                        <Badge
+                          variant={
+                            currentAnimation.status === 'complete' ? 'default' :
+                            currentAnimation.status === 'error' ? 'destructive' :
+                            'secondary'
+                          }
+                        >
+                          {currentAnimation.status}
+                        </Badge>
+                      </div>
+                      <CardDescription className="text-sm">{currentAnimation.question}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      {currentAnimation.status === 'processing' && (
+                        <div className="flex items-center gap-3 text-muted-foreground">
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                          <span className="text-sm">Generating your animation...</span>
+                        </div>
+                      )}
+
+                      {currentAnimation.status === 'error' && (
+                        <Alert variant="destructive">
+                          <AlertDescription className="text-sm">
+                            Error: {currentAnimation.error}
+                          </AlertDescription>
+                        </Alert>
+                      )}
+
+                      {currentAnimation.status === 'complete' && currentAnimation.videoId && (
+                        <div className="space-y-2">
+                          <Separator />
+                          <video
+                            key={currentAnimation.videoId}
+                            controls
+                            autoPlay
+                            className="w-full rounded-lg bg-black border border-border"
+                            src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/animation/${currentAnimation.videoId}`}
+                          >
+                            Your browser does not support video playback.
+                          </video>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                )}
+
+                {animationHistory.length > 0 && (
+                  <Card className="border-border">
+                    <CardHeader>
+                      <CardTitle className="text-base">Previous Animations</CardTitle>
+                      <CardDescription className="text-xs text-muted-foreground">
+                        Recently generated content
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {animationHistory.slice(-3).reverse().map((item, idx) => (
+                        <div key={idx} className="space-y-2">
+                          {idx > 0 && <Separator />}
+                          <p className="text-sm text-foreground font-medium">{item.question}</p>
+                          <video
+                            controls
+                            className="w-full rounded-lg bg-black border border-border"
+                            src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/animation/${item.videoId}`}
+                          >
+                            Your browser does not support video playback.
+                          </video>
+                        </div>
+                      ))}
+                    </CardContent>
+                  </Card>
+                )}
+              </TabsContent>
+
+              {/* Q&A History */}
+              {qaHistory.length > 0 && (
+                <Card className="mt-4 border-border">
+                  <CardHeader>
+                    <CardTitle className="text-base">Recent Q&A</CardTitle>
+                    <CardDescription className="text-xs text-muted-foreground">
+                      Student questions and AI responses
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {qaHistory.slice(-5).reverse().map((qa, idx) => (
+                      <div key={idx} className="space-y-2">
+                        {idx > 0 && <Separator />}
+                        <div>
+                          <p className="font-semibold text-foreground text-sm">Q: {qa.question}</p>
+                          <p className="text-muted-foreground text-sm mt-2 pl-4 border-l-2 border-border">
+                            A: {qa.answer}
+                          </p>
+                          <p className="text-xs text-muted-foreground/60 mt-2">
+                            {new Date(qa.timestamp).toLocaleTimeString()}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          </Tabs>
+        </div>
       </div>
     </div>
   );
@@ -481,14 +440,14 @@ function ClassroomLayout() {
   );
 
   return (
-    <div className="h-screen flex bg-gray-900">
+    <div className="h-screen flex bg-background">
       {/* Left side - Video */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col bg-[var(--surface-darker)]">
         {/* Students bar at top */}
-        <div className="bg-gray-800 p-2 flex gap-2 overflow-x-auto justify-center" style={{ height: '150px' }}>
+        <div className="bg-[var(--surface-dark)] p-3 flex gap-3 overflow-x-auto" style={{ height: '140px' }}>
           {studentTracks.map((track) => (
             <TrackRefContext.Provider value={track} key={track.participant.identity}>
-              <div style={{ minWidth: '200px', width: '200px' }}>
+              <div style={{ minWidth: '180px', width: '180px' }}>
                 <ParticipantTile />
               </div>
             </TrackRefContext.Provider>
@@ -496,7 +455,7 @@ function ClassroomLayout() {
         </div>
 
         {/* Teacher main stage */}
-        <div className="flex-1 p-4 flex items-center justify-center">
+        <div className="flex-1 p-6 flex items-center justify-center">
           {teacher && teacherTracks.length > 0 ? (
             <TrackRefContext.Provider value={teacherTracks[0]}>
               <div className="w-full h-full max-w-6xl">
@@ -504,18 +463,18 @@ function ClassroomLayout() {
               </div>
             </TrackRefContext.Provider>
           ) : (
-            <div className="text-white text-2xl">Waiting for teacher...</div>
+            <div className="text-white text-lg">Waiting for instructor...</div>
           )}
         </div>
 
         {/* Controls at bottom */}
-        <div className="bg-gray-800 p-4">
+        <div className="bg-[var(--surface-dark)] p-4 border-t border-border/20">
           <ControlBar />
         </div>
       </div>
 
       {/* Right side - Smart Dashboard */}
-      <div className="w-96 border-l border-gray-700">
+      <div className="w-[420px] border-l border-border bg-card">
         <SmartDashboard />
       </div>
     </div>
@@ -545,28 +504,29 @@ export default function DashboardRoomPage() {
 
   if (!token) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-900 via-blue-900 to-gray-900">
-        <div className="bg-gray-800/90 backdrop-blur p-8 rounded-xl shadow-2xl w-full max-w-md border border-gray-700">
-          <div className="text-center mb-6">
-            <div className="text-6xl mb-4">🎯</div>
-            <h1 className="text-3xl font-bold mb-2 text-white">Smart Learning Dashboard</h1>
-            <p className="text-gray-400 text-sm">AI-powered instant help for students</p>
-          </div>
-          <div className="space-y-4">
-            <button
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Card className="w-full max-w-md border-border shadow-lg">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl">Learning Platform</CardTitle>
+            <CardDescription>Select your role to join the session</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Button
               onClick={() => handleJoin('teacher')}
-              className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium py-4 px-4 rounded-lg text-lg transition"
+              className="w-full h-12 text-base"
+              variant="default"
             >
-              👨‍🏫 Join as Teacher
-            </button>
-            <button
+              Join as Instructor
+            </Button>
+            <Button
               onClick={() => handleJoin('student')}
-              className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-medium py-4 px-4 rounded-lg text-lg transition"
+              className="w-full h-12 text-base"
+              variant="outline"
             >
-              👨‍🎓 Join as Student
-            </button>
-          </div>
-        </div>
+              Join as Student
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }

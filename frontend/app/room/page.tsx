@@ -127,7 +127,7 @@ function SmartDashboard() {
     return () => {
       room.off('dataReceived', handleData);
     };
-  }, [room]);
+  }, [room, currentAnimation]);
 
   const handleGenerateAnimation = async () => {
     if (!animationInput.trim() || !room) return;
@@ -258,6 +258,110 @@ function SmartDashboard() {
       );
     }
 
+    if (selectedView === 'animations') {
+      return (
+        <div className="bg-gradient-to-br from-pink-900/30 to-pink-800/20 border border-pink-700/50 p-6 rounded-lg">
+          <h3 className="text-2xl font-bold text-pink-300 mb-4 flex items-center gap-2">
+            <span>🎬</span> Generate Animation
+          </h3>
+          <p className="text-gray-300 mb-4">
+            Ask a question about the lesson and get a custom animated explanation!
+          </p>
+
+          {/* Input form */}
+          <div className="mb-6">
+            <textarea
+              value={animationInput}
+              onChange={(e) => setAnimationInput(e.target.value)}
+              placeholder="E.g., Can you explain quadratic equations visually?"
+              className="w-full bg-gray-800 text-white border border-pink-700/50 rounded-lg p-4 min-h-[100px] focus:outline-none focus:border-pink-500"
+              disabled={isGenerating}
+            />
+            <button
+              onClick={handleGenerateAnimation}
+              disabled={!animationInput.trim() || isGenerating}
+              className="mt-3 w-full bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 disabled:from-gray-600 disabled:to-gray-700 text-white font-semibold py-3 px-6 rounded-lg transition"
+            >
+              {isGenerating ? (
+                <span className="flex items-center justify-center gap-2">
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                  Generating Animation...
+                </span>
+              ) : (
+                '✨ Generate Animation'
+              )}
+            </button>
+          </div>
+
+          {/* Current animation status */}
+          {currentAnimation && (
+            <div className="mb-6 bg-pink-950/50 border border-pink-700/50 p-4 rounded-lg">
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-semibold text-pink-200">Current Request:</span>
+                <span className={`text-sm px-2 py-1 rounded ${
+                  currentAnimation.status === 'complete' ? 'bg-green-600' :
+                  currentAnimation.status === 'error' ? 'bg-red-600' :
+                  currentAnimation.status === 'processing' ? 'bg-yellow-600' :
+                  'bg-gray-600'
+                }`}>
+                  {currentAnimation.status}
+                </span>
+              </div>
+              <p className="text-gray-300 text-sm mb-3">{currentAnimation.question}</p>
+
+              {currentAnimation.status === 'processing' && (
+                <div className="flex items-center gap-2 text-yellow-300">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-yellow-300"></div>
+                  <span className="text-sm">AI is generating your animation...</span>
+                </div>
+              )}
+
+              {currentAnimation.status === 'error' && (
+                <div className="text-red-300 text-sm">
+                  ❌ Error: {currentAnimation.error}
+                </div>
+              )}
+
+              {currentAnimation.status === 'complete' && currentAnimation.videoId && (
+                <div className="mt-4">
+                  <video
+                    key={currentAnimation.videoId}
+                    controls
+                    autoPlay
+                    className="w-full rounded-lg bg-black"
+                    src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/animation/${currentAnimation.videoId}`}
+                  >
+                    Your browser does not support video playback.
+                  </video>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Animation history */}
+          {animationHistory.length > 0 && (
+            <div>
+              <h4 className="text-lg font-semibold text-pink-300 mb-3">Previous Animations</h4>
+              <div className="space-y-3">
+                {animationHistory.slice(-3).reverse().map((item, idx) => (
+                  <div key={idx} className="bg-pink-950/30 border border-pink-700/30 p-3 rounded-lg">
+                    <p className="text-sm text-gray-300 mb-2">{item.question}</p>
+                    <video
+                      controls
+                      className="w-full rounded bg-black"
+                      src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/animation/${item.videoId}`}
+                    >
+                      Your browser does not support video playback.
+                    </video>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
     return null;
   };
 
@@ -316,6 +420,22 @@ function SmartDashboard() {
           >
             <div className="text-2xl mb-1">💡</div>
             <div className="text-sm">Topics</div>
+          </button>
+
+          <button
+            onClick={() => {
+              setSelectedView('animations');
+              setAnimationInput('');
+            }}
+            disabled={!cache}
+            className={`p-4 rounded-lg font-semibold transition ${
+              selectedView === 'animations'
+                ? 'bg-pink-600 text-white'
+                : 'bg-gray-800 hover:bg-gray-700 text-gray-300'
+            } ${!cache && 'opacity-50 cursor-not-allowed'}`}
+          >
+            <div className="text-2xl mb-1">🎬</div>
+            <div className="text-sm">Animations</div>
           </button>
         </div>
       </div>

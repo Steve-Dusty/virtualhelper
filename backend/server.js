@@ -96,8 +96,8 @@ app.get('/animation/:videoId', (req, res) => {
   try {
     const videoId = req.params.videoId;
 
-    // Security: Validate videoId format (UUID-like)
-    if (!/^[a-f0-9\-]{20,36}$/.test(videoId)) {
+    // Security: Validate videoId format (alphanumeric with dashes)
+    if (!/^[a-zA-Z0-9\-]{10,50}$/.test(videoId)) {
       return res.status(400).json({ error: 'Invalid video ID format' });
     }
 

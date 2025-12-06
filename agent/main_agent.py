@@ -183,19 +183,24 @@ Classroom Context:
 {context}
 
 Generate a complete, working Manim script that:
-1. Explains the concept visually
-2. Uses simple animations (Text, Circle, Square, Arrow, MathTex)
-3. Runs in 10-15 seconds
-4. Is safe (no imports besides manim, no file I/O, no network)
-5. Has a class named 'ExplainScene' that inherits from Scene
+1. Explains the concept visually with shapes and text
+2. Uses ONLY these simple objects: Text, Circle, Square, Rectangle, Arrow, Line, Dot
+3. DO NOT use Tex, MathTex, or any LaTeX - use Text() only for all text including formulas
+4. Runs in 10-15 seconds
+5. Is safe (no imports besides manim, no file I/O, no network)
+6. Has a class named 'ExplainScene' that inherits from Scene
 
 CRITICAL RULES:
-- ONLY import from manim
+- ONLY import from manim (from manim import *)
+- NO Tex or MathTex - use Text() for everything including math formulas
 - NO file operations (open, read, write)
 - NO external libraries
 - NO infinite loops
-- Use self.play() for animations
-- Use self.wait() between animations
+- Use self.play() for animations with short run_time (0.5-1 second)
+- Use self.wait(0.5) between animations
+- Keep it simple and fast
+
+Example for math: Text("a² + b² = c²") NOT MathTex("a^2 + b^2 = c^2")
 
 Return ONLY the Python code, no explanations:
 
@@ -278,9 +283,17 @@ class ExplainScene(Scene):
         Security validation for generated Manim code.
         Returns False if code contains dangerous patterns.
         """
+        # Check for allowed imports (only manim)
+        import_lines = [line.strip() for line in code.split('\n') if line.strip().startswith('import ') or line.strip().startswith('from ')]
+
+        for line in import_lines:
+            # Allow: from manim import *, import manim
+            if not (line.startswith('from manim ') or line.startswith('import manim')):
+                print(f"❌ Forbidden import: {line}")
+                return False
+
+        # Check for dangerous operations
         dangerous_patterns = [
-            r'import\s+(?!manim)',  # Only allow manim imports
-            r'from\s+(?!manim)',    # Only allow from manim
             r'\bopen\b',            # File operations
             r'\beval\b',            # Code execution
             r'\bexec\b',            # Code execution
@@ -310,46 +323,59 @@ class ExplainScene(Scene):
         """
         Execute Manim script with timeout and error handling.
         """
+        import shutil
+        import glob
+
         try:
-            # Manim command: medium quality, output to specific location
+            # Create output directory for this render
+            output_dir = f"/tmp/manim_output_{request_id}"
+            Path(output_dir).mkdir(exist_ok=True)
+
+            # Manim command: low quality for speed
             cmd = [
                 'manim',
-                '-qm',  # Medium quality (faster)
+                '-ql',  # Low quality (fastest)
                 '--format=mp4',
-                '--media_dir=/tmp',
-                f'--output_file=output_{request_id}.mp4',
+                f'--media_dir={output_dir}',
                 script_path,
                 'ExplainScene'
             ]
 
+            print(f"🎬 Running command: {' '.join(cmd)}")
             result = subprocess.run(
                 cmd,
                 capture_output=True,
                 text=True,
-                timeout=self.manim_timeout,
-                cwd='/tmp'
+                timeout=self.manim_timeout
             )
 
-            if result.returncode == 0:
-                # Manim creates nested directories, find the actual file
-                media_path = Path(f"/tmp/videos/manim_{request_id}/480p15")
-                video_file = media_path / f"output_{request_id}.mp4"
+            print(f"📤 Manim stdout: {result.stdout[-500:]}")
+            print(f"📤 Manim stderr: {result.stderr[-500:]}")
 
-                if video_file.exists():
-                    # Move to expected location
-                    import shutil
-                    shutil.move(str(video_file), output_path)
+            if result.returncode == 0:
+                # Find the generated video file (Manim creates nested structure)
+                video_files = glob.glob(f"{output_dir}/**/ExplainScene.mp4", recursive=True)
+
+                if video_files:
+                    # Move first found video to expected location
+                    shutil.move(video_files[0], output_path)
+                    # Cleanup temp directory
+                    shutil.rmtree(output_dir, ignore_errors=True)
+                    print(f"✅ Video saved to: {output_path}")
                     return {"success": True}
                 else:
+                    print(f"❌ No video files found in {output_dir}")
                     return {"success": False, "error": "Video file not found after rendering"}
             else:
-                error_msg = result.stderr[:200]  # Truncate error
+                error_msg = result.stderr[-500:] if result.stderr else result.stdout[-500:]
                 print(f"❌ Manim error: {error_msg}")
                 return {"success": False, "error": f"Manim rendering failed: {error_msg}"}
 
         except subprocess.TimeoutExpired:
             return {"success": False, "error": "Animation generation timed out (60s)"}
         except Exception as e:
+            import traceback
+            traceback.print_exc()
             return {"success": False, "error": str(e)}
 
     async def cleanup_old_animations(self):
@@ -497,8 +523,8 @@ async def entrypoint(ctx: JobContext):
             del active_transcriptions[participant.identity]
 
     # Handle animation requests from frontend
-    async def handle_data_received(data: rtc.DataPacket):
-        """Handle incoming data from frontend"""
+    async def handle_data_received_async(data: rtc.DataPacket):
+        """Handle incoming data from frontend (async)"""
         if data.topic == 'lk.animation-request':
             try:
                 payload = json.loads(data.data.decode('utf-8'))
@@ -552,10 +578,15 @@ async def entrypoint(ctx: JobContext):
             except Exception as e:
                 print(f"❌ Error handling animation request: {e}")
 
+    # Sync wrapper for data_received event
+    def on_data_received(data: rtc.DataPacket):
+        """Sync wrapper that creates task for async handler"""
+        asyncio.create_task(handle_data_received_async(data))
+
     # Register handlers BEFORE connecting
     ctx.room.on("track_subscribed", on_track_subscribed)
     ctx.room.on("track_unsubscribed", on_track_unsubscribed)
-    ctx.room.on("data_received", handle_data_received)
+    ctx.room.on("data_received", on_data_received)
 
     # Connect
     await ctx.connect(auto_subscribe=agents.AutoSubscribe.AUDIO_ONLY)

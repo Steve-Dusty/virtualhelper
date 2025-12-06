@@ -48,7 +48,7 @@ class CentralOrchestrator:
 
         # Animation tracking
         self.animation_files = {}  # Track: {request_id: {script_path, video_path, timestamp}}
-        self.manim_timeout = 60  # seconds
+        self.manim_timeout = 120  # seconds (increased for longer, higher-quality animations)
 
     def add_message(self, speaker: str, text: str, role: str):
         """Add transcription to buffer"""
@@ -175,43 +175,146 @@ Answer:"""
         context = self.get_conversation_text(last_n=20)
 
         # 2. Generate Manim code using Gradient AI
-        prompt = f"""You are a Manim expert creating educational animations.
+        prompt = f"""You are a Manim expert creating 3Blue1Brown-style educational animations.
 
 Student Question: "{question}"
 
 Classroom Context:
 {context}
 
-Generate a complete, working Manim script that:
-1. Explains the concept visually with shapes and text
-2. Uses ONLY these simple objects: Text, Circle, Square, Rectangle, Arrow, Line, Dot
-3. DO NOT use Tex, MathTex, or any LaTeX - use Text() only for all text including formulas
-4. Runs in 10-15 seconds
-5. Is safe (no imports besides manim, no file I/O, no network)
-6. Has a class named 'ExplainScene' that inherits from Scene
+Generate a complete, comprehensive Manim script that:
 
-CRITICAL RULES:
-- ONLY import from manim (from manim import *)
-- NO Tex or MathTex - use Text() for everything including math formulas
-- NO file operations (open, read, write)
-- NO external libraries
-- NO infinite loops
-- Use self.play() for animations with short run_time (0.5-1 second)
-- Use self.wait(0.5) between animations
-- Keep it simple and fast
+ANIMATION REQUIREMENTS:
+1. Duration: Create a 15-20 second comprehensive animation
+2. Sequential & Clear: NO overlapping animations - each element must be introduced sequentially
+3. Style: 3Blue1Brown aesthetic with smooth, elegant animations
+4. Pacing: Use run_time=1.5-2 for main animations, wait(1) between major sections
 
-Example for math: Text("a² + b² = c²") NOT MathTex("a^2 + b^2 = c^2")
+🚨 CRITICAL: NO OVERLAPPING TEXT/EQUATIONS 🚨
+- NEVER place multiple equations or text in the same position
+- Use VERTICAL SPACING: .shift(UP*3), .shift(UP*2), .shift(UP), ORIGIN (center), .shift(DOWN), .shift(DOWN*2), .shift(DOWN*3)
+- Use HORIZONTAL SPACING: .shift(LEFT*3), .shift(LEFT*2), .shift(LEFT), ORIGIN (center), .shift(RIGHT), .shift(RIGHT*2), .shift(RIGHT*3)
+- Each new element MUST have a different position than previous elements
+- Example: If one equation is at .shift(UP*2), put the next at ORIGIN, then .shift(DOWN*2)
+- Use .next_to() to position elements relative to others with proper buffer
+- Example: text2.next_to(text1, DOWN, buff=0.5)
+- IMPORTANT: In Manim, the center is ORIGIN (not CENTER). Elements without .shift() default to ORIGIN
 
-Return ONLY the Python code, no explanations:
+VISUAL DIVERSITY - USE MULTIPLE OBJECT TYPES:
+Beyond just text and equations, include:
+- GRAPHS: Use Axes() with plot() to show functions, trends, relationships
+- CHARTS: Use BarChart() for comparisons, data visualization
+- GEOMETRIC SHAPES: Circles, Squares, Rectangles, Polygons to represent concepts
+- ARROWS: Vector arrows, curved arrows to show flow and relationships
+- NUMBER LINES: NumberLine() for sequences, ranges, intervals
+- COORDINATE SYSTEMS: Axes for plotting points, functions, transformations
+- DIAGRAMS: Combine shapes to create conceptual diagrams
+- ANIMATIONS: Move objects, transform shapes, show cause-and-effect visually
 
+3BLUE1BROWN STYLING FOR MATH CONCEPTS:
+- Colors: BLUE (#58C4DD) for primary concepts, YELLOW (#FFFF00) for highlights, GREEN (#83C167) for results
+- Animations: Use Transform, FadeIn, Write, Create, Indicate, Flash for emphasis
+- Layout: Center main concepts, use arrows to show relationships
+- Text: Large titles (font_size=48), clear explanations (font_size=36)
+- Shapes: Clean geometric shapes with smooth transitions
+
+STRUCTURE (Follow this exactly):
+1. Title scene (2-3 seconds): Fade in the title, wait, fade out
+2. Setup (3-4 seconds): Introduce the problem/concept with text and basic shapes
+3. Main explanation (8-10 seconds): Step-by-step visual breakdown with GRAPHS/CHARTS/DIAGRAMS
+4. Conclusion (2-3 seconds): Show final result with emphasis
+
+CRITICAL SECURITY RULES (Code will be rejected if violated):
+- ONLY import from manim: "from manim import *" (NO other imports!)
+- NO file operations: NO open(), read(), write(), Path()
+- NO dangerous functions: NO eval(), exec(), __import__()
+- NO system operations: NO os., sys., subprocess
+- NO network operations: NO requests, urllib, socket
+- NO infinite loops: NO "while True:"
+- MUST have: class ExplainScene(Scene):
+
+TECHNICAL RULES:
+- Use Text() for ALL text including math (e.g., Text("a² + b² = c²"))
+- NO Tex, MathTex, or LaTeX - ONLY Text()
+- Use Manim built-in colors: BLUE, YELLOW, GREEN, RED, WHITE, GRAY, ORANGE, PURPLE, PINK
+- Each animation: run_time between 1.5-2 seconds
+- Add self.wait(1) between major animation sequences
+- NO overlapping: Use self.play() one at a time, then self.wait()
+- Use simple Manim objects: Circle, Square, Rectangle, Arrow, Line, Dot, Text, Polygon, Axes, NumberLine, BarChart
+- Available position constants: ORIGIN (center), UP, DOWN, LEFT, RIGHT (combine with * for multiples)
+- DO NOT use undefined constants like CENTER - use ORIGIN instead
+
+EXAMPLE STRUCTURE WITH PROPER SPACING AND VISUAL DIVERSITY:
 ```python
 from manim import *
 
 class ExplainScene(Scene):
     def construct(self):
-        # Your animation here
+        # 1. TITLE (2-3 sec) - Position at TOP
+        title = Text("Pythagorean Theorem", font_size=48, color=BLUE).shift(UP*2.5)
+        self.play(Write(title), run_time=2)
+        self.wait(1)
+        self.play(FadeOut(title), run_time=1)
+
+        # 2. SETUP (3-4 sec) - Position at TOP, then move
+        setup_text = Text("For right triangles:", font_size=36).shift(UP*3)
+        self.play(FadeIn(setup_text), run_time=1.5)
+        self.wait(1)
+
+        # 3. MAIN CONTENT (8-10 sec) - MULTIPLE OBJECTS WITH DIFFERENT POSITIONS
+        # Draw triangle at CENTER-LEFT (not overlapping with text)
+        triangle = Polygon(LEFT*2+DOWN, LEFT*2+UP*2, RIGHT+DOWN, color=BLUE).shift(LEFT*2)
+        self.play(Create(triangle), run_time=2)
+        self.wait(1)
+
+        # Add labels at DIFFERENT positions using .next_to()
+        label_a = Text("a = 3", color=YELLOW, font_size=28).next_to(triangle, LEFT, buff=0.3)
+        self.play(Write(label_a), run_time=1.5)
+        self.wait(0.5)
+
+        label_b = Text("b = 4", color=YELLOW, font_size=28).next_to(triangle, UP, buff=0.3)
+        self.play(Write(label_b), run_time=1.5)
+        self.wait(0.5)
+
+        label_c = Text("c = ?", color=YELLOW, font_size=28).next_to(triangle, RIGHT, buff=0.3)
+        self.play(Write(label_c), run_time=1.5)
+        self.wait(0.5)
+
+        # Add GRAPH or VISUAL on the RIGHT side (not overlapping!)
+        # Example: Show the relationship as a graph
+        axes = Axes(
+            x_range=[0, 5, 1], y_range=[0, 5, 1],
+            x_length=3, y_length=3,
+            axis_config={{"color": GRAY}}
+        ).shift(RIGHT*3.5)
+
+        graph = axes.plot(lambda x: (x**2)**0.5, color=GREEN)
+        self.play(Create(axes), run_time=1.5)
+        self.play(Create(graph), run_time=1.5)
+        self.wait(1)
+
+        # 4. CONCLUSION (2-3 sec) - Position at BOTTOM (separate from everything else!)
+        result = Text("a² + b² = c²", font_size=40, color=GREEN).shift(DOWN*2.5)
+        self.play(Write(result), run_time=2)
+        self.play(Flash(result, color=YELLOW), run_time=1)
+
+        final_answer = Text("3² + 4² = 5²", font_size=36, color=YELLOW).next_to(result, DOWN, buff=0.5)
+        self.play(Write(final_answer), run_time=1)
+        self.wait(1)
 ```
-"""
+
+KEY SPACING RULES IN THIS EXAMPLE:
+- Title: UP*2.5 (top of screen)
+- Setup text: UP*3 (very top)
+- Triangle: LEFT*2 (left side, centered vertically)
+- Labels: Use .next_to() with buff=0.3 (positioned relative to triangle)
+- Graph/Axes: RIGHT*3.5 (right side, not overlapping triangle)
+- Result: DOWN*2.5 (bottom of screen)
+- Final answer: .next_to(result, DOWN, buff=0.5) (below result)
+
+NEVER put two elements in the same position! Each must have unique placement!
+
+Return ONLY the Python code following this structure:"""
 
         try:
             # Generate code
@@ -219,8 +322,8 @@ class ExplainScene(Scene):
                 self.gradient_client.chat.completions.create,
                 messages=[{"role": "user", "content": prompt}],
                 model=self.model,
-                max_tokens=800,
-                temperature=0.3  # Lower temperature for reliable code
+                max_tokens=1500,  # Increased for comprehensive animations
+                temperature=0.4  # Slightly higher for more creative animations
             )
 
             if not response.choices or not response.choices[0].message.content:
@@ -236,7 +339,12 @@ class ExplainScene(Scene):
 
             # 3. Security validation
             if not self._validate_manim_code(code):
-                return {"success": False, "error": "Generated code failed security validation"}
+                # Save failed code for debugging
+                debug_path = f"/tmp/failed_manim_{request_id}.py"
+                with open(debug_path, 'w') as f:
+                    f.write(code)
+                print(f"💾 Failed code saved to: {debug_path}")
+                return {"success": False, "error": "Generated code failed security validation. Check agent logs for details."}
 
             # 4. Save to temporary file
             script_path = f"/tmp/manim_{request_id}.py"
@@ -283,40 +391,48 @@ class ExplainScene(Scene):
         Security validation for generated Manim code.
         Returns False if code contains dangerous patterns.
         """
+        print(f"\n🔒 Validating generated code...")
+
         # Check for allowed imports (only manim)
         import_lines = [line.strip() for line in code.split('\n') if line.strip().startswith('import ') or line.strip().startswith('from ')]
 
         for line in import_lines:
             # Allow: from manim import *, import manim
             if not (line.startswith('from manim ') or line.startswith('import manim')):
-                print(f"❌ Forbidden import: {line}")
+                print(f"❌ VALIDATION FAILED: Forbidden import detected")
+                print(f"   Line: {line}")
                 return False
 
         # Check for dangerous operations
-        dangerous_patterns = [
-            r'\bopen\b',            # File operations
-            r'\beval\b',            # Code execution
-            r'\bexec\b',            # Code execution
-            r'\b__import__\b',      # Dynamic imports
-            r'\bsubprocess\b',      # System calls
-            r'\bos\.',              # OS operations
-            r'\bsys\.',             # System operations
-            r'requests\.',          # Network
-            r'urllib\.',            # Network
-            r'socket\.',            # Network
-            r'while\s+True:',       # Infinite loops
-        ]
+        dangerous_patterns = {
+            r'\bopen\s*\(': 'File operations (open)',
+            r'\beval\s*\(': 'Code execution (eval)',
+            r'\bexec\s*\(': 'Code execution (exec)',
+            r'\b__import__': 'Dynamic imports',
+            r'\bsubprocess\.': 'System calls (subprocess)',
+            r'\bos\.': 'OS operations',
+            r'\bsys\.': 'System operations',
+            r'requests\.': 'Network requests',
+            r'urllib\.': 'Network urllib',
+            r'socket\.': 'Network socket',
+            r'while\s+True\s*:': 'Infinite loops (while True)'
+        }
 
-        for pattern in dangerous_patterns:
-            if re.search(pattern, code, re.IGNORECASE):
-                print(f"❌ Security violation: {pattern}")
+        for pattern, description in dangerous_patterns.items():
+            match = re.search(pattern, code, re.IGNORECASE)
+            if match:
+                print(f"❌ VALIDATION FAILED: {description}")
+                print(f"   Pattern: {pattern}")
+                print(f"   Matched: {match.group()}")
+                print(f"   Context: ...{code[max(0, match.start()-30):match.end()+30]}...")
                 return False
 
         # Must contain required class
         if 'class ExplainScene(Scene):' not in code:
-            print(f"❌ Missing required class: ExplainScene")
+            print(f"❌ VALIDATION FAILED: Missing required class 'ExplainScene(Scene)'")
             return False
 
+        print(f"✅ Code validation passed!")
         return True
 
     def _run_manim(self, script_path: str, output_path: str, request_id: str) -> dict:
@@ -331,11 +447,12 @@ class ExplainScene(Scene):
             output_dir = f"/tmp/manim_output_{request_id}"
             Path(output_dir).mkdir(exist_ok=True)
 
-            # Manim command: low quality for speed
+            # Manim command: medium quality for better visuals
             cmd = [
                 'manim',
-                '-ql',  # Low quality (fastest)
+                '-qm',  # Medium quality (720p, good balance)
                 '--format=mp4',
+                '--fps=30',  # Smooth 30fps
                 f'--media_dir={output_dir}',
                 script_path,
                 'ExplainScene'

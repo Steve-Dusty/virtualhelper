@@ -4,287 +4,457 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
+import { Sparkles, Video, Brain, Zap, Users, BarChart, BookOpen, Rocket } from 'lucide-react';
 
 export default function LandingPage() {
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.2,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        type: 'spring' as const,
+        stiffness: 100,
+      },
+    },
+  };
+
+  const floatVariants = {
+    animate: {
+      y: [0, -20, 0],
+      transition: {
+        duration: 6,
+        repeat: Infinity,
+        ease: 'easeInOut' as const,
+      },
+    },
+  };
+
+  const features = [
+    {
+      icon: Video,
+      title: 'Real-Time Video Streaming',
+      description: 'Crystal-clear HD video streaming with ultra-low latency for seamless virtual interactions',
+      color: 'from-purple-500 to-pink-500',
+    },
+    {
+      icon: Brain,
+      title: 'AI-Powered Insights',
+      description: 'Smart summaries and topic extraction powered by cutting-edge AI models',
+      color: 'from-blue-500 to-cyan-500',
+    },
+    {
+      icon: Sparkles,
+      title: 'Animated Explanations',
+      description: 'Generate stunning mathematical animations on-demand with Manim integration',
+      color: 'from-violet-500 to-purple-500',
+    },
+    {
+      icon: Zap,
+      title: 'Instant Summaries',
+      description: 'Real-time transcription and intelligent summarization every 5 seconds',
+      color: 'from-amber-500 to-orange-500',
+    },
+    {
+      icon: Users,
+      title: 'Multi-User Collaboration',
+      description: 'Support for teachers and multiple students with role-based interactions',
+      color: 'from-green-500 to-emerald-500',
+    },
+    {
+      icon: BarChart,
+      title: 'Learning Analytics',
+      description: 'Track engagement, comprehension, and progress with detailed insights',
+      color: 'from-rose-500 to-red-500',
+    },
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-surface-base to-muted">
+    <div className="min-h-screen bg-gradient-to-br from-[#0a0a0f] via-[#1a0a2e] to-[#0f0a1a] relative overflow-hidden">
+      {/* Animated background elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-96 h-96 bg-purple-600/30 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute top-1/2 -left-40 w-[500px] h-[500px] bg-blue-600/25 rounded-full blur-3xl animate-pulse delay-1000" />
+        <div className="absolute bottom-20 right-1/3 w-80 h-80 bg-pink-600/30 rounded-full blur-3xl animate-pulse delay-500" />
+        <div className="absolute top-1/4 right-1/4 w-64 h-64 bg-cyan-500/20 rounded-full blur-3xl animate-pulse delay-700" />
+      </div>
+
       {/* Header */}
-      <header className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-50">
+      <motion.header
+        initial={{ y: -100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ type: 'spring', stiffness: 100 }}
+        className="glass-card border-b sticky top-0 z-50 backdrop-blur-2xl"
+      >
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-[var(--brand-gradient-from)] to-[var(--brand-gradient-to)] rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-xl">L</span>
+          <motion.div
+            className="flex items-center gap-3"
+            whileHover={{ scale: 1.05 }}
+            transition={{ type: 'spring', stiffness: 300 }}
+          >
+            <div className="w-10 h-10 gradient-primary rounded-xl flex items-center justify-center shadow-lg glow">
+              <Sparkles className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-foreground">LearnLive</h1>
-              <p className="text-xs text-muted-foreground">AI-Powered Education</p>
+              <h1 className="text-xl font-bold text-purple-400">
+                VirtualHelper
+              </h1>
+              <p className="text-xs text-muted-foreground">AI-Powered Virtual Assistance</p>
             </div>
-          </div>
+          </motion.div>
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm">About</Button>
-            <Button variant="ghost" size="sm">Features</Button>
+            <Button variant="ghost" size="sm" className="hover-lift">
+              About
+            </Button>
+            <Button variant="ghost" size="sm" className="hover-lift">
+              Features
+            </Button>
             <Link href="/room">
-              <Button>
+              <Button className="gradient-primary border-0 shadow-lg glow hover-lift">
                 Get Started
               </Button>
             </Link>
           </div>
         </div>
-      </header>
+      </motion.header>
 
       {/* Hero Section */}
-      <section className="container mx-auto px-6 py-20">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+      <section className="container mx-auto px-6 py-20 relative z-10">
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="grid lg:grid-cols-2 gap-12 items-center"
+        >
           <div className="space-y-6">
-            <Badge className="bg-primary/10 text-primary hover:bg-primary/10">
-              Next-Generation Learning Platform
-            </Badge>
-            <h2 className="text-5xl font-bold text-foreground leading-tight">
-              Transform Your Classroom with{' '}
-              <span className="bg-gradient-to-r from-[var(--brand-gradient-from)] to-[var(--brand-gradient-to)] bg-clip-text text-transparent">
+            <motion.div variants={itemVariants}>
+              <Badge className="gradient-primary border-0 text-white hover:scale-105 transition-transform">
+                <Rocket className="w-3 h-3 mr-1" />
+                Next-Generation Virtual Platform
+              </Badge>
+            </motion.div>
+            <motion.h2
+              variants={itemVariants}
+              className="text-6xl font-bold text-foreground leading-tight"
+            >
+              Revolutionize Learning with{' '}
+              <span className="text-purple-400">
                 AI Intelligence
               </span>
-            </h2>
-            <p className="text-xl text-muted-foreground leading-relaxed">
-              Real-time transcription, instant summaries, and personalized animated explanations
-              powered by cutting-edge AI. The future of education is here.
-            </p>
-            <div className="flex gap-4">
+            </motion.h2>
+            <motion.p variants={itemVariants} className="text-xl text-muted-foreground leading-relaxed">
+              Experience the future of education with real-time AI summaries, instant animated
+              explanations, and seamless video collaboration. All powered by cutting-edge technology.
+            </motion.p>
+            <motion.div variants={itemVariants} className="flex gap-4">
               <Link href="/room">
-                <Button size="lg" className="h-14 px-8 text-base">
+                <Button size="lg" className="h-14 px-8 text-base gradient-primary border-0 shadow-xl glow hover-lift">
+                  <Sparkles className="w-4 h-4 mr-2" />
                   Launch Platform
                 </Button>
               </Link>
-              <Button size="lg" variant="outline" className="h-14 px-8 text-base">
+              <Button
+                size="lg"
+                variant="outline"
+                className="h-14 px-8 text-base glass-card hover-lift"
+              >
+                <Video className="w-4 h-4 mr-2" />
                 Watch Demo
               </Button>
-            </div>
-            <div className="flex items-center gap-8 pt-4">
+            </motion.div>
+            <motion.div variants={itemVariants} className="flex items-center gap-8 pt-4">
               <div>
-                <p className="text-3xl font-bold text-foreground">10k+</p>
-                <p className="text-sm text-muted-foreground">Active Students</p>
+                <p className="text-3xl font-bold text-purple-400">
+                  10k+
+                </p>
+                <p className="text-sm text-muted-foreground">Active Users</p>
               </div>
               <div className="h-12 w-px bg-border"></div>
               <div>
-                <p className="text-3xl font-bold text-foreground">500+</p>
+                <p className="text-3xl font-bold text-purple-400">
+                  500+
+                </p>
                 <p className="text-sm text-muted-foreground">Educators</p>
               </div>
               <div className="h-12 w-px bg-border"></div>
               <div>
-                <p className="text-3xl font-bold text-foreground">99%</p>
+                <p className="text-3xl font-bold text-purple-400">
+                  99%
+                </p>
                 <p className="text-sm text-muted-foreground">Satisfaction</p>
               </div>
-            </div>
+            </motion.div>
           </div>
-          <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-br from-[var(--brand-gradient-from)] to-[var(--brand-gradient-to)] rounded-3xl blur-3xl opacity-20"></div>
-            <div className="relative bg-card rounded-2xl shadow-2xl border border-border p-8">
+
+          {/* Animated demo card */}
+          <motion.div variants={floatVariants} animate="animate" className="relative">
+            <div className="absolute inset-0 gradient-primary rounded-3xl blur-3xl opacity-40 animate-pulse"></div>
+            <div className="relative glass-card rounded-2xl shadow-2xl p-8 border border-purple-500/30">
               <div className="space-y-4">
-                <div className="flex items-center justify-between pb-4 border-b border-border">
+                <motion.div
+                  className="flex items-center justify-between pb-4 border-b border-border/50"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.5 }}
+                >
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-gradient-to-br from-[var(--brand-gradient-from)] to-[var(--brand-gradient-to)] rounded-full"></div>
+                    <div className="w-12 h-12 gradient-primary rounded-full ring-4 ring-purple-500/20"></div>
                     <div>
-                      <p className="font-semibold text-foreground">Professor Sarah Chen</p>
-                      <p className="text-sm text-muted-foreground">Quantum Physics</p>
+                      <p className="font-semibold text-foreground">Dr. Alex Rivera</p>
+                      <p className="text-sm text-muted-foreground">Advanced Mathematics</p>
                     </div>
                   </div>
-                  <Badge className="bg-green-100 text-green-700 hover:bg-green-100">Live</Badge>
-                </div>
+                  <Badge className="bg-green-500/30 text-green-300 hover:bg-green-500/30 ring-2 ring-green-500/50">
+                    <div className="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse shadow-[0_0_8px_rgba(74,222,128,0.8)]"></div>
+                    Live
+                  </Badge>
+                </motion.div>
                 <div className="space-y-3">
-                  <div className="bg-primary/5 rounded-lg p-4 border border-primary/20">
-                    <p className="text-sm font-medium text-foreground mb-1">AI Summary</p>
-                    <p className="text-sm text-muted-foreground">Discussing wave-particle duality and quantum superposition...</p>
-                  </div>
-                  <div className="bg-accent rounded-lg p-4 border border-border">
-                    <p className="text-sm font-medium text-foreground mb-1">Student Question</p>
-                    <p className="text-sm text-muted-foreground">How does quantum entanglement work?</p>
-                  </div>
-                  <div className="bg-accent rounded-lg p-4 border border-border">
-                    <p className="text-sm font-medium text-foreground mb-1">AI Generated Animation</p>
-                    <div className="w-full h-24 bg-gradient-to-br from-[var(--brand-gradient-from)] to-[var(--brand-gradient-to)] rounded-lg flex items-center justify-center">
-                      <div className="text-white text-sm font-medium">▶ Play Animation</div>
+                  <motion.div
+                    className="glass-card rounded-lg p-4 border-l-2 border-purple-500/50"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.7 }}
+                  >
+                    <div className="flex items-start gap-2">
+                      <Brain className="w-4 h-4 text-purple-400 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-medium text-foreground mb-1">AI Summary</p>
+                        <p className="text-sm text-muted-foreground">
+                          Exploring quantum mechanics and wave-particle duality principles...
+                        </p>
+                      </div>
                     </div>
-                  </div>
+                  </motion.div>
+                  <motion.div
+                    className="glass-card rounded-lg p-4 border-l-2 border-purple-500/50"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.9 }}
+                  >
+                    <div className="flex items-start gap-2">
+                      <Users className="w-4 h-4 text-purple-400 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-medium text-foreground mb-1">Student Question</p>
+                        <p className="text-sm text-muted-foreground">
+                          How does quantum entanglement work?
+                        </p>
+                      </div>
+                    </div>
+                  </motion.div>
+                  <motion.div
+                    className="glass-card rounded-lg p-4 border-l-2 border-purple-500/50"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 1.1 }}
+                  >
+                    <div className="flex items-start gap-2">
+                      <Sparkles className="w-4 h-4 text-purple-400 mt-0.5" />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-foreground mb-2">
+                          AI Generated Animation
+                        </p>
+                        <div className="w-full h-24 gradient-primary rounded-lg flex items-center justify-center shadow-lg glow cursor-pointer hover:scale-105 transition-transform">
+                          <div className="text-white text-sm font-medium flex items-center gap-2">
+                            <Video className="w-4 h-4" />
+                            Play Animation
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </section>
 
       {/* Features Section */}
-      <section className="container mx-auto px-6 py-20">
-        <div className="text-center mb-16">
-          <Badge className="bg-primary/10 text-primary hover:bg-primary/10 mb-4">
+      <section className="container mx-auto px-6 py-20 relative z-10">
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-16"
+        >
+          <Badge className="gradient-primary border-0 text-white hover:scale-105 transition-transform mb-4">
+            <Zap className="w-3 h-3 mr-1" />
             Powerful Features
           </Badge>
-          <h3 className="text-4xl font-bold text-foreground mb-4">
+          <h3 className="text-5xl font-bold text-foreground mb-4">
             Everything You Need for Modern Education
           </h3>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Comprehensive tools designed to enhance learning and teaching experiences
           </p>
-        </div>
+        </motion.div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <Card className="border-border hover:shadow-lg transition-shadow bg-gradient-to-br from-card to-accent/30">
-            <CardHeader>
-              <div className="w-12 h-12 bg-gradient-to-br from-[var(--brand-gradient-from)] to-[var(--brand-gradient-to)] rounded-lg flex items-center justify-center mb-4">
-                <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-                </svg>
-              </div>
-              <CardTitle className="text-xl">Real-Time Transcription</CardTitle>
-              <CardDescription className="text-base">
-                Automatic speech-to-text with speaker identification and timestamps
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card className="border-border hover:shadow-lg transition-shadow bg-gradient-to-br from-card to-accent/30">
-            <CardHeader>
-              <div className="w-12 h-12 bg-gradient-to-br from-[var(--brand-gradient-from)] to-[var(--brand-gradient-to)] rounded-lg flex items-center justify-center mb-4">
-                <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                </svg>
-              </div>
-              <CardTitle className="text-xl">AI-Powered Summaries</CardTitle>
-              <CardDescription className="text-base">
-                Instant lesson summaries and key topic extraction every 5 seconds
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card className="border-border hover:shadow-lg transition-shadow bg-gradient-to-br from-card to-accent/30">
-            <CardHeader>
-              <div className="w-12 h-12 bg-gradient-to-br from-[var(--brand-gradient-from)] to-[var(--brand-gradient-to)] rounded-lg flex items-center justify-center mb-4">
-                <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
-                </svg>
-              </div>
-              <CardTitle className="text-xl">Animated Explanations</CardTitle>
-              <CardDescription className="text-base">
-                Custom Manim animations generated on-demand for any concept
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card className="border-border hover:shadow-lg transition-shadow bg-gradient-to-br from-card to-accent/30">
-            <CardHeader>
-              <div className="w-12 h-12 bg-gradient-to-br from-[var(--brand-gradient-from)] to-[var(--brand-gradient-to)] rounded-lg flex items-center justify-center mb-4">
-                <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-                </svg>
-              </div>
-              <CardTitle className="text-xl">Smart Q&A</CardTitle>
-              <CardDescription className="text-base">
-                Automatic question detection and contextual AI responses
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card className="border-border hover:shadow-lg transition-shadow bg-gradient-to-br from-card to-accent/30">
-            <CardHeader>
-              <div className="w-12 h-12 bg-gradient-to-br from-[var(--brand-gradient-from)] to-[var(--brand-gradient-to)] rounded-lg flex items-center justify-center mb-4">
-                <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-              </div>
-              <CardTitle className="text-xl">Learning Analytics</CardTitle>
-              <CardDescription className="text-base">
-                Track engagement, comprehension, and learning outcomes in real-time
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card className="border-border hover:shadow-lg transition-shadow bg-gradient-to-br from-card to-accent/30">
-            <CardHeader>
-              <div className="w-12 h-12 bg-gradient-to-br from-[var(--brand-gradient-from)] to-[var(--brand-gradient-to)] rounded-lg flex items-center justify-center mb-4">
-                <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                </svg>
-              </div>
-              <CardTitle className="text-xl">Personalized Learning</CardTitle>
-              <CardDescription className="text-base">
-                Tailored content and pacing based on individual student needs
-              </CardDescription>
-            </CardHeader>
-          </Card>
-        </div>
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
+        >
+          {features.map((feature, idx) => (
+            <motion.div key={idx} variants={itemVariants}>
+              <Card className="glass-card hover-lift h-full group cursor-pointer">
+                <CardHeader>
+                  <div
+                    className={`w-14 h-14 bg-gradient-to-br ${feature.color} rounded-xl flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform`}
+                  >
+                    <feature.icon className="w-7 h-7 text-white" />
+                  </div>
+                  <CardTitle className="text-xl group-hover:text-purple-400 transition-colors">
+                    {feature.title}
+                  </CardTitle>
+                  <CardDescription className="text-base">{feature.description}</CardDescription>
+                </CardHeader>
+              </Card>
+            </motion.div>
+          ))}
+        </motion.div>
       </section>
 
       {/* CTA Section */}
-      <section className="container mx-auto px-6 py-20">
-        <Card className="border-border bg-gradient-to-br from-[var(--brand-gradient-from)] via-[var(--brand-gradient-to)] to-[var(--brand-gradient-from)] text-white overflow-hidden relative">
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute inset-0" style={{backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 50px, rgba(255,255,255,0.1) 50px, rgba(255,255,255,0.1) 51px)'}}></div>
-          </div>
-          <CardContent className="relative py-16 px-8 text-center">
-            <Badge className="bg-white/20 text-white hover:bg-white/20 mb-4 border-white/30">
-              Ready to Get Started?
-            </Badge>
-            <h3 className="text-4xl font-bold mb-4">
-              Join Thousands of Educators Transforming Learning
-            </h3>
-            <p className="text-xl text-white/80 mb-8 max-w-2xl mx-auto">
-              Start using LearnLive today and experience the future of education
-            </p>
-            <div className="flex gap-4 justify-center">
-              <Link href="/room">
-                <Button size="lg" className="bg-white text-primary hover:bg-white/90 h-14 px-8 text-base">
-                  Start Free Trial
+      <section className="container mx-auto px-6 py-20 relative z-10">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+        >
+          <Card className="gradient-primary text-white overflow-hidden relative border-0 shadow-2xl">
+            <div className="absolute inset-0 opacity-20 animate-gradient bg-gradient-to-r from-transparent via-white to-transparent bg-[length:200%_200%]"></div>
+            <CardContent className="relative py-16 px-8 text-center">
+              <Badge className="bg-white/20 text-white hover:bg-white/30 mb-4 border-white/30 ring-2 ring-white/20">
+                <Rocket className="w-3 h-3 mr-1" />
+                Ready to Get Started?
+              </Badge>
+              <h3 className="text-5xl font-bold mb-4">
+                Join Thousands Transforming Education
+              </h3>
+              <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
+                Start using VirtualHelper today and experience the future of learning
+              </p>
+              <div className="flex gap-4 justify-center">
+                <Link href="/room">
+                  <Button
+                    size="lg"
+                    className="bg-white text-purple-600 hover:bg-white/90 h-14 px-8 text-base shadow-xl hover-lift font-semibold"
+                  >
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    Start Free Trial
+                  </Button>
+                </Link>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="h-14 px-8 text-base border-white/40 text-white hover:bg-white/10 backdrop-blur-xl"
+                >
+                  <BookOpen className="w-4 h-4 mr-2" />
+                  Schedule Demo
                 </Button>
-              </Link>
-              <Button size="lg" variant="outline" className="h-14 px-8 text-base border-white/30 text-white hover:bg-white/10">
-                Schedule Demo
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border bg-card">
+      <footer className="glass-card border-t relative z-10">
         <div className="container mx-auto px-6 py-12">
           <div className="grid md:grid-cols-4 gap-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 bg-gradient-to-br from-[var(--brand-gradient-from)] to-[var(--brand-gradient-to)] rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold">L</span>
+                <div className="w-8 h-8 gradient-primary rounded-lg flex items-center justify-center shadow-lg glow">
+                  <Sparkles className="w-5 h-5 text-white" />
                 </div>
-                <span className="font-bold text-foreground">LearnLive</span>
+                <span className="font-bold text-purple-400">
+                  VirtualHelper
+                </span>
               </div>
               <p className="text-sm text-muted-foreground">
-                Transforming education with AI-powered learning tools
+                Revolutionizing education with AI-powered virtual assistance
               </p>
             </div>
             <div>
               <h4 className="font-semibold text-foreground mb-4">Product</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="#" className="hover:text-primary transition-colors">Features</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Pricing</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Demo</a></li>
+                <li>
+                  <a href="#" className="hover:text-primary transition-colors">
+                    Features
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-primary transition-colors">
+                    Pricing
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-primary transition-colors">
+                    Demo
+                  </a>
+                </li>
               </ul>
             </div>
             <div>
               <h4 className="font-semibold text-foreground mb-4">Company</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="#" className="hover:text-primary transition-colors">About</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Blog</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Careers</a></li>
+                <li>
+                  <a href="#" className="hover:text-primary transition-colors">
+                    About
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-primary transition-colors">
+                    Blog
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-primary transition-colors">
+                    Careers
+                  </a>
+                </li>
               </ul>
             </div>
             <div>
               <h4 className="font-semibold text-foreground mb-4">Legal</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="#" className="hover:text-primary transition-colors">Privacy</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Terms</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Security</a></li>
+                <li>
+                  <a href="#" className="hover:text-primary transition-colors">
+                    Privacy
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-primary transition-colors">
+                    Terms
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-primary transition-colors">
+                    Security
+                  </a>
+                </li>
               </ul>
             </div>
           </div>
-          <div className="mt-12 pt-8 border-t border-border text-center text-sm text-muted-foreground">
-            <p>&copy; 2024 LearnLive. All rights reserved.</p>
+          <div className="mt-12 pt-8 border-t border-border/50 text-center text-sm text-muted-foreground">
+            <p>&copy; 2024 VirtualHelper. All rights reserved.</p>
           </div>
         </div>
       </footer>

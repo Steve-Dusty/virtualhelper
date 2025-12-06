@@ -1,0 +1,8 @@
+livekit>=1.0.0
+livekit-agents>=0.8.0
+livekit-plugins-openai>=0.6.0
+livekit-plugins-silero>=0.6.0
+python-dotenv>=1.0.0
+httpx>=0.27.0
+git+https://github.com/tori-tadata/langchain-gradient.git@tool-support
+manim>=0.18.0

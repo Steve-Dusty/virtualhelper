@@ -1,0 +1,93 @@
+# Environment variables
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+
+# Dependencies
+node_modules/
+venv/
+env/
+ENV/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+.venv/
+
+# Build outputs
+dist/
+build/
+*.egg-info/
+.next/
+out/
+.nuxt/
+.cache/
+.parcel-cache/
+*.js.map
+*.min.js
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Testing
+coverage/
+.coverage
+.pytest_cache/
+.tox/
+htmlcov/
+*.cover
+.hypothesis/
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.swp
+.tmp/
+tmp/
+
+# Package manager lock files (optional - comment out if you want to track these)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# TypeScript
+*.tsbuildinfo
+
+# Misc
+.turbo/
+.vercel/
